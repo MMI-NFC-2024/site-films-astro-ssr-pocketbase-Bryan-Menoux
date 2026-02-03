@@ -10,7 +10,21 @@
     "typegen": "npx pocketbase-typegen --db ./pocketbase/pb_data/data.db --out ./src/pocketbase-types.ts"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.17.1",
-    "pocketbase": "^0.26.8"
-  }
+    "pocketbase": "^0.26.8",
+    "tailwindcss": "^4.1.18"
+  },
+  "description": "```sh npm create astro@latest -- --template minimal ```",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MMI-NFC-2024/site-films-astro-ssr-pocketbase-Bryan-Menoux.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MMI-NFC-2024/site-films-astro-ssr-pocketbase-Bryan-Menoux/issues"
+  },
+  "homepage": "https://github.com/MMI-NFC-2024/site-films-astro-ssr-pocketbase-Bryan-Menoux#readme"
 }
