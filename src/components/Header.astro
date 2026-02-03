@@ -1,0 +1,8 @@
+<header>
+    <nav>
+        <a href="/">Accueil</a>
+        {
+            <a href="/authpassword">{Astro.locals.pb.authStore.isValid ? "Se déconnecter" : "Se connecter"}</a>
+        }
+    </nav>
+</header>

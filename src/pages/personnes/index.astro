@@ -17,9 +17,11 @@ let personnes = await Astro.locals.pb.collection("personnes").getFullList();
     {
       personnes.map((personne) => (
         <li>
-            <Linkpersonne personne={personne}/>
+          <Linkpersonne personne={personne} />
         </li>
       ))
     }
   </ul>
+
+
 </Layout>
