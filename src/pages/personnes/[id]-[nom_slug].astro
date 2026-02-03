@@ -2,10 +2,9 @@
 import Layout from "../../layouts/Layout.astro";
 import { Debug } from "astro:components";
 
-export const prerender = false;
 const { id } = Astro.params;
 
-const personne = await Astro.locals.pb.collection("personnes").getOne(id);
+const personne = await Astro.locals.pb.collection("personnes").getOne(id ?? "Inconnu");
 ---
 
 <Layout>
