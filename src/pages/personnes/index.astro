@@ -1,0 +1,25 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Linkpersonne from "../../components/Linkpersonne.astro";
+
+let personnes = await Astro.locals.pb.collection("personnes").getFullList();
+
+// personnes.map((personne) => {
+//     // Récupère l'url de l'image
+//     const imageUrl = Astro.locals.pb.files.getURL(personne, personne.photo);
+//     console.log(imageUrl);
+// });
+---
+
+<Layout>
+  <h1>Personnes</h1>
+  <ul>
+    {
+      personnes.map((personne) => (
+        <li>
+            <Linkpersonne personne={personne}/>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>
