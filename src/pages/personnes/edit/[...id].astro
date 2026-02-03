@@ -3,6 +3,8 @@ import Layout from "../../../layouts/Layout.astro";
 import slug from "slug";
 import type { PersonnesResponse } from "../../../pocketbase-types";
 import { formatDate } from "../../../utils/utilitaires";
+import { object } from "astro:schema";
+import { PersonnesNationaliteOptions, PersonnesProfessionOptions } from "../../../pocketbase-types";
 
 const { id } = Astro.params;
 let message = null;
@@ -72,18 +74,40 @@ if (Astro.request.method === "POST") {
         class="mt-1 block w-full border border-gray-800 rounded-md"
       />
     </label>
-    <!-- <label class="block text-gray-700 max-w-xl">
-            <span>Profession :</span>
-            <input type="text" name="profession" class="mt-1 block w-full border border-gray-800 rounded-md"/>
-        </label> -->
+
+    <fieldset class="flex gap-4">
+        <legend>Professions</legend>
+      {
+        Object.entries(PersonnesProfessionOptions).map(([key, value]) => (
+          <label class="block text-gray-700 max-w-xl">
+            <input
+              type="checkbox"
+              name="profession"
+              value={value}
+              checked={personne.profession?.includes(value)}
+            />
+            {key}
+          </label>
+        ))
+      }
+    </fieldset>
+
     <label class="block text-gray-700 max-w-xl">
-      <span>Nationnalité :</span>
-      <input
-        name="nationnalite"
-        value={personne.nationnalite || ""}
-        class="mt-1 block w-full border border-gray-800 rounded-md"
-      /></label
-    >
+      <span>Nationalité :</span>
+        <select name="nationalite">
+            <option value="">-- Sélectionnez une nationalité --</option>
+            {
+                Object.entries(PersonnesNationaliteOptions).map(([key, value]) => (
+                    <option
+                        value={value}
+                        selected={personne.nationalite === value}
+                    >
+                        {key}
+                    </option>
+                ))
+            }
+        </select>
+    </label>
     <button type="submit">
       {id ? "Mettre à jour" : "Ajouter"}
     </button>

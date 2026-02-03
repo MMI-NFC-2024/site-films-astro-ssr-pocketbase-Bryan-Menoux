@@ -103,7 +103,7 @@ export enum PersonnesProfessionOptions {
 	"scénariste" = "scénariste",
 }
 
-export enum PersonnesNationnaliteOptions {
+export enum PersonnesNationaliteOptions {
 	"FR" = "FR",
 	"ES" = "ES",
 	"GB" = "GB",
@@ -115,7 +115,7 @@ export type PersonnesRecord = {
 	date_de_deces?: IsoDateString
 	date_de_naissance?: IsoDateString
 	id: string
-	nationnalite?: PersonnesNationnaliteOptions
+	nationalite?: PersonnesNationaliteOptions
 	nom?: string
 	photo?: FileNameString
 	prenom?: string
