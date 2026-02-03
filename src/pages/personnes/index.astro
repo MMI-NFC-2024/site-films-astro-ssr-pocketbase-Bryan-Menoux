@@ -23,5 +23,5 @@ let personnes = await Astro.locals.pb.collection("personnes").getFullList();
     }
   </ul>
 
-
+  {Astro.locals.pb.authStore.isValid && <a href="/personnes/edit/">Ajouter une nouvelle personne</a> }
 </Layout>

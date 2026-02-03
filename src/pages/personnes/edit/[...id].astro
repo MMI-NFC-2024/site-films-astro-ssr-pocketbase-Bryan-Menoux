@@ -1,0 +1,91 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import slug from "slug";
+import type { PersonnesResponse } from "../../../pocketbase-types";
+import { formatDate } from "../../../utils/utilitaires";
+
+const { id } = Astro.params;
+let message = null;
+
+let personne = {} as PersonnesResponse;
+if (id) {
+  personne = await Astro.locals.pb.collection("personnes").getOne(id);
+}
+
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const personneCree = await (
+    id
+      ? Astro.locals.pb.collection("personnes").update(id!, data)
+      : Astro.locals.pb.collection("personnes").create(data)
+  ).catch((err) => {
+    console.error("Erreur de sauvegarde de la personne : ", err);
+    message = err.message;
+    console.log("Message d'erreur :", message);
+  });
+  if (personneCree) {
+    return Astro.redirect(
+      `/personnes/${personneCree.id}-${slug(personneCree.nom)}`,
+    );
+  }
+}
+---
+
+<Layout>
+  <h1>Ajouter une personne</h1>
+  {message && <p class="text-red-500">{message}</p>}
+  <form method="post">
+    {id && <input type="hidden" name="id" value={id} />}
+    <input
+      type="hidden"
+      name="user"
+      value={Astro.locals.pb.authStore.record?.id}
+    />
+    <label class="block text-gray-700 max-w-xl">
+      <span>Nom :</span>
+      <input type="text" name="nom" value={personne.nom || ""} />
+    </label>
+    <label class="block text-gray-700 max-w-xl">
+      <span>Prénom :</span>
+      <input
+        type="text"
+        name="prenom"
+        value={personne.prenom || ""}
+        class="mt-1 block w-full border border-gray-800 rounded-md"
+      />
+    </label>
+    <label class="block text-gray-700 max-w-xl">
+      <span>Date de naissance</span>
+      <input
+        type="date"
+        name="date_de_naissance"
+        value={formatDate(personne.date_de_naissance) || ""}
+        class="mt-1 block w-full border border-gray-800 rounded-md"
+      />
+    </label>
+    <label class="block text-gray-700 max-w-xl">
+      <span>Date de décès</span>
+      <input
+        type="date"
+        name="date_deces"
+        value={formatDate(personne.date_de_deces) || ""}
+        class="mt-1 block w-full border border-gray-800 rounded-md"
+      />
+    </label>
+    <!-- <label class="block text-gray-700 max-w-xl">
+            <span>Profession :</span>
+            <input type="text" name="profession" class="mt-1 block w-full border border-gray-800 rounded-md"/>
+        </label> -->
+    <label class="block text-gray-700 max-w-xl">
+      <span>Nationnalité :</span>
+      <input
+        name="nationnalite"
+        value={personne.nationnalite || ""}
+        class="mt-1 block w-full border border-gray-800 rounded-md"
+      /></label
+    >
+    <button type="submit">
+      {id ? "Mettre à jour" : "Ajouter"}
+    </button>
+  </form>
+</Layout>
