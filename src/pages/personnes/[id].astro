@@ -1,4 +1,5 @@
 ---
+import Layout from "../../layouts/Layout.astro";
 import { Debug } from "astro:components";
 import type { PersonnesRecord } from "../../pocketbase-types";
 
@@ -8,5 +9,7 @@ const { id } = Astro.params;
 const personne = await Astro.locals.pb.collection("personnes").getOne(id);
 ---
 
-<p>Affichage d'une personne</p>
-<Debug value={personne} />
+<Layout>
+  <p>Affichage d'une personne</p>
+  <Debug personne={personne} />
+</Layout>
