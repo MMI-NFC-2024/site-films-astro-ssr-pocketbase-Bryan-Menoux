@@ -1,10 +1,12 @@
 ---
 import type { PersonnesRecord } from '../pocketbase-types'
+import slug from "slug";
 
 
 interface Props {
     personne: PersonnesRecord
 }
 const personne = Astro.props.personne;
+
 ---
-<a href={`/personnes/${personne.id}`}>{personne.nom}</a>
+<a href={`/personnes/${personne.id}-${slug(personne.nom??"Inconnu")}`}>{personne.nom}</a>
