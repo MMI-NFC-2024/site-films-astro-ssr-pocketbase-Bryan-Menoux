@@ -1,27 +1,51 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Linkfilm from "../../components/Linkfilm.astro";
+import slug from "slug";
 
 let films = await Astro.locals.pb.collection("films").getFullList();
 
-// personnes.map((personne) => {
+// films.map((film) => {
 //     // Récupère l'url de l'image
-//     const imageUrl = Astro.locals.pb.files.getURL(personne, personne.photo);
-//     console.log(imageUrl);
+//     const imageUrl = Astro.locals.pb.files.getURL(film, film.affiche);
 // });
 ---
 
 <Layout>
-  <h1>Films</h1>
-  <ul>
-    {
+    <a href="/" class="inline-block mb-4 text-primary hover:text-primary-focus ml-32 mt-32 sticky top-24">← Retourner à l'accueil</a>
+    <h1 class="text-4xl uppercase font-bold mb-6 mx-auto max-w-7xl text-center">Liste des Films</h1>
+    <div class="flex flex-col mx-auto max-w-7xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {
       films.map((film) => (
-        <li>
-            <Linkfilm film={film} />
-        </li>
+        <div id="affiche-film" class="card bg-base-100 border border-base-300 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+          {film.affiche && <img src={Astro.locals.pb.files.getURL(film, film.affiche)} alt={film.titre} class="w-full h-120 object-cover mb-2 rounded" />}
+          <h2 class="text-xl font-semibold mb-1"><a href={`/films/${film.id}-${slug(film.titre??"Inconnu")}`} class="text-primary hover:text-primary-focus">{film.titre}</a></h2>
+          {film.date_sortie && <p class="text-base-content/70 mb-1">{new Date(film.date_sortie).getFullYear()}</p>}
+          {film.genres && <p class="text-base-content/50">{film.genres.join(", ")}</p>}
+          {film.synopsis && <p class="text-base-content/60 text-sm mt-2 line-clamp-2">{film.synopsis}</p>}
+        </div>
       ))
     }
-  </ul>
+    </div>
+      {Astro.locals.pb.authStore.isValid && <a href="/films/edit/" class="btn btn-primary mt-8">Ajouter un nouveau film</a> }
+  </div>
 
-  {Astro.locals.pb.authStore.isValid && <a href="/films/edit/">Ajouter un nouveau film</a> }
+
+
 </Layout>
+
+<script>
+    // Petit script qui récupère chaque div des affiches pour mettre un lien directement sur l'image
+    const articles = document.querySelectorAll('#affiche-film');
+    articles.forEach(article => {
+        const link = article.querySelector('a');
+        const image = article.querySelector('img');
+        if (link && image) {
+            image.style.cursor = 'pointer';
+            image.addEventListener('click', () => {
+                window.location.href = link.href;
+            });
+        }
+    });
+</script>
