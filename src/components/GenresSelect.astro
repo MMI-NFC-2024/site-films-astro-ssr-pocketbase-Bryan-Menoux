@@ -1,0 +1,147 @@
+---
+import { FilmsGenresOptions } from "../pocketbase-types";
+
+interface Props {
+  selectedGenres?: string[];
+}
+
+const { selectedGenres = [] } = Astro.props;
+const genres = Object.entries(FilmsGenresOptions).map(([key, value]) => ({
+  key,
+  value,
+}));
+---
+
+<div class="block mb-4">
+  <span class="block text-gray-600 mb-2">Genres :</span>
+  <div class="relative inline-block w-full" id="genres-dropdown">
+    <button
+      type="button"
+      id="genres-button"
+      class="w-full border border-gray-300 rounded px-3 py-2 bg-white text-left flex justify-between items-center hover:border-gray-400"
+    >
+      <span id="genres-label">
+        {selectedGenres.length === 0
+          ? "Sélectionnez des genres..."
+          : `${selectedGenres.length} genre${selectedGenres.length > 1 ? "s" : ""} sélectionné${selectedGenres.length > 1 ? "s" : ""}`}
+      </span>
+      <svg id="genres-arrow" class="w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+
+    <div
+      id="genres-menu"
+      class="hidden absolute top-full left-0 right-0 mt-1 border border-gray-300 rounded bg-white shadow-lg z-10"
+    >
+      <input
+        type="text"
+        id="genres-search"
+        placeholder="Rechercher..."
+        class="w-full px-3 py-2 border-b border-gray-300 focus:outline-none"
+      />
+
+      <div class="max-h-64 overflow-y-auto">
+        <label class="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200">
+          <input
+            type="checkbox"
+            id="genres-all"
+            class="w-4 h-4 cursor-pointer"
+          />
+          <span class="ml-2 text-gray-800 font-medium">Tous</span>
+        </label>
+
+        {
+          genres.map(({ key, value }) => (
+            <label class="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer genre-item border-b border-gray-200 last:border-b-0">
+              <input
+                type="checkbox"
+                name="genres"
+                value={value}
+                checked={selectedGenres?.includes(value)}
+                class="w-4 h-4 cursor-pointer"
+              />
+              <span class="ml-2 text-gray-700">{key}</span>
+            </label>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const button = document.getElementById('genres-button') as HTMLButtonElement;
+  const menu = document.getElementById('genres-menu') as HTMLDivElement;
+  const dropdown = document.getElementById('genres-dropdown') as HTMLDivElement;
+  const arrow = document.getElementById('genres-arrow') as HTMLElement;
+  const searchInput = document.getElementById('genres-search') as HTMLInputElement;
+  const allCheckbox = document.getElementById('genres-all') as HTMLInputElement;
+  const label = document.getElementById('genres-label') as HTMLSpanElement;
+  const genreItems = document.querySelectorAll('.genre-item input[type="checkbox"]');
+
+  if (!button || !menu || !searchInput || !allCheckbox) {
+    console.error('Genre select elements not found');
+  } else {
+    // Toggle dropdown
+    button.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+      arrow.style.transform = menu.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(90deg)';
+      if (!menu.classList.contains('hidden')) {
+        searchInput.focus();
+      }
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target as Node)) {
+        menu.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    // Search functionality
+    searchInput.addEventListener('input', (e) => {
+      const query = (e.target as HTMLInputElement).value.toLowerCase();
+      document.querySelectorAll('.genre-item').forEach((item) => {
+        const text = item.textContent?.toLowerCase() || '';
+        (item as HTMLElement).style.display = text.includes(query) ? '' : 'none';
+      });
+    });
+
+    // Update label when selection changes
+    const updateLabel = () => {
+      const checked = Array.from(genreItems).filter(
+        (cb) => (cb as HTMLInputElement).checked
+      ).length;
+      if (checked === 0) {
+        label.textContent = 'Sélectionnez des genres...';
+      } else {
+        label.textContent = `${checked} genre${checked > 1 ? 's' : ''} sélectionné${checked > 1 ? 's' : ''}`;
+      }
+    };
+
+    // Select all functionality
+    allCheckbox.addEventListener('change', () => {
+      genreItems.forEach((checkbox) => {
+        (checkbox as HTMLInputElement).checked = allCheckbox.checked;
+      });
+      updateLabel();
+    });
+
+    // Update "all" checkbox when individual items change
+    genreItems.forEach((checkbox) => {
+      checkbox.addEventListener('change', () => {
+        const allChecked = Array.from(genreItems).every(
+          (cb) => (cb as HTMLInputElement).checked
+        );
+        const someChecked = Array.from(genreItems).some(
+          (cb) => (cb as HTMLInputElement).checked
+        );
+        allCheckbox.checked = allChecked;
+        allCheckbox.indeterminate = someChecked && !allChecked;
+        updateLabel();
+      });
+    });
+  }
+</script>
