@@ -1,6 +1,12 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Linkpersonne from "../../components/Linkpersonne.astro";
+import {
+  PersonnesProfessionOptions,
+  type FilmsRecord,
+  type PersonnesRecord,
+  type RolesRecord,
+} from "../../pocketbase-types";
 
 let personnes = await Astro.locals.pb.collection("personnes").getFullList();
 
@@ -19,27 +25,30 @@ personnes.map((personne) => {
   <h1 class="text-4xl uppercase font-bold mb-6 mx-auto max-w-7xl text-center">
     Liste des Personnes
   </h1>
-  <div
-    class="flex flex-col items-start mb-32 max-w-7xl mx-auto px-4"
-  >
+  <div class="flex flex-col items-start mb-32 max-w-7xl mx-auto px-4">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {
-      personnes.map((personne) => (
-        <div
-          id="affiche-personne"
-          class="card bg-base-100 p-4 rounded-lg shadow-xl hover:shadow-2xl transition-shadow"
-        >
-          <img
-            src={Astro.locals.pb.files.getURL(personne, personne.photo)}
-            alt={personne.nom}
-            class="w-full h-120 object-cover mb-2 rounded"
-          />
-          <h2 class="text-xl font-semibold mb-1">
-            <Linkpersonne personne={personne} />
-          </h2>
-        </div>
-      ))
-    }
+        personnes.map((personne) => (
+          <div
+            id="affiche-personne"
+            class="card bg-base-100 p-4 rounded-lg shadow-xl hover:shadow-2xl transition-shadow"
+          >
+            <img
+              src={Astro.locals.pb.files.getURL(personne, personne.photo)}
+              alt={personne.nom}
+              class="w-full h-120 object-cover mb-2 rounded"
+            />
+            <h2 class="text-xl font-semibold mb-1">
+              <Linkpersonne personne={personne} />
+            </h2>
+            {personne.profession && (
+              <div class="text-base-content/70">
+                {personne.profession.map(prof => PersonnesProfessionOptions[prof]).join(', ')}
+              </div>
+            )}
+          </div>
+        ))
+      }
     </div>
     {
       Astro.locals.pb.authStore.isValid && (
