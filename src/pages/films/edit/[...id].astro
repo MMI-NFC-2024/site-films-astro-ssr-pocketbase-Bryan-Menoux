@@ -45,7 +45,7 @@ const personnesListe = await Astro.locals.pb
 <Layout>
   <h1>{id ? "Modifier un film" : "Ajouter un film"}</h1>
   {message && <p class="text-red-500">{message}</p>}
-  <form method="post" enctype="multipart/form-data" class="max-w-xl">
+  <form method="post" enctype="multipart/form-data" class="max-w-xl" id="film-form">
     {id && <input type="hidden" name="id" value={id} />}
     <input
       type="hidden"
@@ -114,7 +114,7 @@ const personnesListe = await Astro.locals.pb
         <option>Choisir un producteur ou plusieurs producteurs</option>
         {
           personnesListe.map(({ nom, prenom, id }) => (
-            <option value={id} selected={film.producteur.includes(id)}>
+            <option value={id} selected={film.producteur?.some(producteur => producteur === id)}>
               {prenom} {nom}
             </option>
           ))
@@ -131,7 +131,7 @@ const personnesListe = await Astro.locals.pb
         <option>Choisir un acteur ou plusieurs acteurs</option>
         {
           personnesListe.map(({ nom, prenom, id }) => (
-            <option value={id} selected={film.acteur.includes(id)}>
+            <option value={id} selected={film.acteur?.some(acteur => acteur === id)}>
               {prenom} {nom}
             </option>
           ))
@@ -189,6 +189,7 @@ const personnesListe = await Astro.locals.pb
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("film-form") as HTMLFormElement;
       const input = document.getElementById(
         "affiche-input",
       ) as HTMLInputElement;
@@ -212,6 +213,13 @@ const personnesListe = await Astro.locals.pb
         } else {
           container.classList.add("hidden");
           objectURL = "";
+        }
+      });
+
+      // Handle form submission to exclude empty file inputs
+      form.addEventListener("submit", (e) => {
+        if (input.files?.length === 0) {
+          input.removeAttribute("name");
         }
       });
 
