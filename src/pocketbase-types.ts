@@ -116,6 +116,7 @@ export enum FilmsPaysOptions {
 	"DE" = "DE",
 }
 export type FilmsRecord = {
+	affiche?: FileNameString
 	created: IsoAutoDateString
 	date_sortie?: IsoDateString
 	duree_min?: number
