@@ -1,20 +1,160 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { Debug } from "astro:components";
+import { formatDate } from "../../utils/utilitaires";
+import type {
+  FilmsRecord,
+  PersonnesRecord,
+  RolesRecord,
+} from "../../pocketbase-types";
+import Linkfilm from "../../components/Linkfilm.astro";
 
 const { id } = Astro.params;
 
-const personne = await Astro.locals.pb
-  .collection("personnes")
-  .getOne(id ?? "Inconnu");
+const personne = await Astro.locals.pb.collection("personnes").getOne(id!);
+
+const roles = (await Astro.locals.pb.collection("roles").getFullList({
+  expand: "film,personne",
+})) as (RolesRecord & {
+  expand?: { film?: FilmsRecord; personne?: PersonnesRecord };
+})[];
 ---
 
 <Layout>
-  <p>Affichage d'une personne</p>
-  <Debug {personne} />
-  {
-    Astro.locals.pb.authStore.record?.id == personne.user && (
-      <a href={`/personnes/edit/${personne.id}`}>Éditer cette personne</a>
-    )
-  }
+  <a
+    href="/personnes"
+    class="inline-block mb-4 text-primary hover:text-primary-focus ml-32 fixed"
+    >← Retour à la liste des personnes</a
+  >
+  <div class="max-w-4xl mx-auto mt-32">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Photo de la personne -->
+      <div class="md:col-span-1">
+        {
+          personne.photo && (
+            <img
+              src={Astro.locals.pb.files.getURL(personne, personne.photo)}
+              alt={`Photo de ${personne.prenom} ${personne.nom}`}
+              class="w-full rounded-lg shadow-lg object-cover aspect-square"
+            />
+          )
+        }
+        {
+          Astro.locals.pb.authStore.record?.id === personne.user && (
+            <div class="text-right mt-4">
+              <a
+                href={`/personnes/edit/${personne.id}`}
+                class="btn btn-primary btn-sm w-full"
+              >
+                Éditer
+              </a>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Informations de la personne -->
+      <div class="md:col-span-2">
+        <h1 class="text-4xl font-bold mb-4">
+          {personne.prenom}
+          {personne.nom}
+        </h1>
+
+        <div class="space-y-4">
+          {
+            roles.map((role) => role.personne).includes(personne.id) && (
+              <div>
+                <span class="font-semibold text-base-content/70">Rôles :</span>
+                <span class="ml-2">
+                  {(() => {
+                    const personRoles = roles.filter(
+                      (role) => role.personne === personne.id,
+                    );
+                    const roleMap = new Map();
+                    personRoles.forEach((role) => {
+                      const roleName = role.nom_role || "Non spécifié";
+                      if (!roleMap.has(roleName)) {
+                        roleMap.set(roleName, new Set());
+                      }
+                      if (role.film) {
+                        roleMap.get(roleName).add(role.film);
+                      }
+                    });
+                    return Array.from(roleMap.entries())
+                      .map(
+                        ([roleName, films]) =>
+                          `${roleName}${films.size > 1 ? ` (${films.size} films différents)` : ""}`,
+                      )
+                      .join(", ");
+                  })()}
+                </span>
+              </div>
+            )
+          }
+
+          {
+            personne.profession && personne.profession.length > 0 && (
+              <div>
+                <span class="font-semibold text-base-content/70">
+                  Profession :
+                </span>
+                <span class="ml-2">{personne.profession.join(", ")}</span>
+              </div>
+            )
+          }
+        </div>
+        <div class="mt-6">
+          {
+            personne.date_de_naissance && (
+              <div>
+                <h2 class="text-2xl font-semibold mb-2">Date de naissance</h2>
+                <p class="whitespace-pre-line">
+                  {personne.nom &&
+                    personne.prenom &&
+                    `${personne.prenom} ${personne.nom} est né(e) le `}
+                  {formatDate(personne.date_de_naissance)}
+                </p>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </div>
+    <div class="flex min-w-full h-fit mt-8 gap-16 overflow-x-scroll py-16">
+      {
+        roles.map((role) => {
+          if (role.personne === personne.id && role.film && role.expand?.film) {
+            const film = role.expand!.film!;
+            return (
+              <div class=" flex flex-col items-center min-w-fit h-fit shadow-2xl p-4 rounded-lg" id="affiche-film">
+                {film.affiche && (
+                  <img
+                    src={Astro.locals.pb.files.getURL(film, film.affiche)}
+                    alt={`Affiche du film ${film.titre}`}
+                    class="w-64 min-h-96 object-cover rounded-sm"
+                  />
+                )}
+                <Linkfilm film={film}>
+                  <h3 class="text-lg font-semibold">{film.titre}</h3>
+                </Linkfilm>
+              </div>
+            );
+          }
+        })
+      }
+    </div>
+  </div>
 </Layout>
+
+<script>
+  const articles = document.querySelectorAll("#affiche-film");
+  articles.forEach((article) => {
+    const link = article.querySelector("a");
+    const image = article.querySelector("img");
+    if (link && image) {
+      image.style.cursor = "pointer";
+      image.addEventListener("click", () => {
+        window.location.href = link.href;
+      });
+    }
+  });
+</script>
