@@ -11,6 +11,7 @@ export enum Collections {
 	Mfas = "_mfas",
 	Otps = "_otps",
 	Superusers = "_superusers",
+	Films = "films",
 	Personnes = "personnes",
 	Users = "users",
 }
@@ -93,6 +94,40 @@ export type SuperusersRecord = {
 	verified?: boolean
 }
 
+export enum FilmsGenresOptions {
+	"Comédie" = "Comédie",
+	"Science-fiction" = "Science-fiction",
+	"Drame" = "Drame",
+	"Action" = "Action",
+	"Horreur" = "Horreur",
+	"Romance" = "Romance",
+	"Thriller" = "Thriller",
+	"Aventure" = "Aventure",
+	"Fantastique" = "Fantastique",
+	"Animation" = "Animation",
+}
+
+export enum FilmsPaysOptions {
+	"FR" = "FR",
+	"EN" = "EN",
+	"GB" = "GB",
+	"US" = "US",
+	"ES" = "ES",
+	"DE" = "DE",
+}
+export type FilmsRecord = {
+	created: IsoAutoDateString
+	date_sortie?: IsoDateString
+	duree_min?: number
+	genres?: FilmsGenresOptions[]
+	id: string
+	pays?: FilmsPaysOptions
+	synopsis?: string
+	titre?: string
+	updated: IsoAutoDateString
+	user?: RecordIdString
+}
+
 export enum PersonnesProfessionOptions {
 	"réalisateur" = "réalisateur",
 	"réalisatrice" = "réalisatrice",
@@ -143,6 +178,7 @@ export type ExternalauthsResponse<Texpand = unknown> = Required<ExternalauthsRec
 export type MfasResponse<Texpand = unknown> = Required<MfasRecord> & BaseSystemFields<Texpand>
 export type OtpsResponse<Texpand = unknown> = Required<OtpsRecord> & BaseSystemFields<Texpand>
 export type SuperusersResponse<Texpand = unknown> = Required<SuperusersRecord> & AuthSystemFields<Texpand>
+export type FilmsResponse<Texpand = unknown> = Required<FilmsRecord> & BaseSystemFields<Texpand>
 export type PersonnesResponse<Texpand = unknown> = Required<PersonnesRecord> & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
 
@@ -154,6 +190,7 @@ export type CollectionRecords = {
 	_mfas: MfasRecord
 	_otps: OtpsRecord
 	_superusers: SuperusersRecord
+	films: FilmsRecord
 	personnes: PersonnesRecord
 	users: UsersRecord
 }
@@ -164,6 +201,7 @@ export type CollectionResponses = {
 	_mfas: MfasResponse
 	_otps: OtpsResponse
 	_superusers: SuperusersResponse
+	films: FilmsResponse
 	personnes: PersonnesResponse
 	users: UsersResponse
 }
