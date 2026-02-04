@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Linkfilm from "../../components/Linkfilm.astro";
+
+let films = await Astro.locals.pb.collection("films").getFullList();
+
+// personnes.map((personne) => {
+//     // Récupère l'url de l'image
+//     const imageUrl = Astro.locals.pb.files.getURL(personne, personne.photo);
+//     console.log(imageUrl);
+// });
+---
+
+<Layout>
+  <h1>Films</h1>
+  <ul>
+    {
+      films.map((film) => (
+        <li>
+            <Linkfilm film={film} />
+        </li>
+      ))
+    }
+  </ul>
+
+  {Astro.locals.pb.authStore.isValid && <a href="/films/edit/">Ajouter un nouveau film</a> }
+</Layout>
