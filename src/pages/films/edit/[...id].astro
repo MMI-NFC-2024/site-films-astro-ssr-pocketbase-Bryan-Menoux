@@ -15,12 +15,13 @@ if (id) {
 
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
+  
   const filmCree = await (
     id
       ? Astro.locals.pb.collection("films").update(id!, data)
       : Astro.locals.pb.collection("films").create(data)
   ).catch((err) => {
-    console.error("Erreur de sauvegarde de la personne : ", err);
+    console.error("Erreur de sauvegarde du film : ", err);
     message = err.message;
     console.log("Message d'erreur :", message);
   });
@@ -37,7 +38,7 @@ const afficheUrl = film.affiche
 <Layout>
   <h1>{id ? "Modifier un film" : "Ajouter un film"}</h1>
   {message && <p class="text-red-500">{message}</p>}
-  <form method="post" class="max-w-xl">
+  <form method="post" enctype="multipart/form-data" class="max-w-xl">
     {id && <input type="hidden" name="id" value={id} />}
     <input
       type="hidden"
