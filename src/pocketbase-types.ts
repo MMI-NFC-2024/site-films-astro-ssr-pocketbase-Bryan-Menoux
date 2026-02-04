@@ -116,6 +116,7 @@ export enum FilmsPaysOptions {
 	"DE" = "DE",
 }
 export type FilmsRecord = {
+	acteur?: RecordIdString[]
 	affiche?: FileNameString
 	created: IsoAutoDateString
 	date_sortie?: IsoDateString
@@ -123,6 +124,8 @@ export type FilmsRecord = {
 	genres?: FilmsGenresOptions[]
 	id: string
 	pays?: FilmsPaysOptions
+	producteur?: RecordIdString[]
+	realisateur?: RecordIdString
 	synopsis?: string
 	titre?: string
 	updated: IsoAutoDateString
