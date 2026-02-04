@@ -43,149 +43,181 @@ const personnesListe = await Astro.locals.pb
 ---
 
 <Layout>
-  <h1>{id ? "Modifier un film" : "Ajouter un film"}</h1>
-  {message && <p class="text-red-500">{message}</p>}
-  <form method="post" enctype="multipart/form-data" class="max-w-xl" id="film-form">
-    {id && <input type="hidden" name="id" value={id} />}
-    <input
-      type="hidden"
-      name="user"
-      value={Astro.locals.pb.authStore.record?.id}
-    />
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Titre :</span>
-      <input
-        type="text"
-        name="titre"
-        value={film.titre || ""}
-        class="w-full border border-gray-300 rounded px-3 py-2"
-      />
-    </label>
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Date de sortie :</span>
-      <input
-        type="date"
-        name="date_sortie"
-        value={film.date_sortie ? formatDate(film.date_sortie) : ""}
-        class="w-full border border-gray-300 rounded px-3 py-2"
-      />
-    </label>
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Durée (en minutes):</span>
-      <input
-        type="number"
-        name="duree_min"
-        value={film.duree_min || ""}
-        class="w-full border border-gray-300 rounded px-3 py-2"
-      />
-    </label>
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Synopsis :</span>
-      <textarea
-        name="synopsis"
-        rows="10"
-        class="w-full border border-gray-300 rounded px-3 py-2"
-        >{film.synopsis || ""}</textarea
-      >
-    </label>
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Réalisateur :</span>
-      <select
-        name="realisateur"
-        class="w-full border border-gray-300 rounded px-3 py-2"
-      >
-        <option>Choisir un réalisateur</option>
-        {
-          personnesListe.map(({ nom, prenom, id }) => (
-            <option value={id} selected={film.realisateur === id}>
-              {prenom} {nom}
-            </option>
-          ))
-        }
-      </select>
-    </label>
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Producteur(s) :</span>
-      <select
-        name="producteur"
-        class="w-full border border-gray-300 rounded px-3 py-2"
-        multiple
-      >
-        <option>Choisir un producteur ou plusieurs producteurs</option>
-        {
-          personnesListe.map(({ nom, prenom, id }) => (
-            <option value={id} selected={film.producteur?.some(producteur => producteur === id)}>
-              {prenom} {nom}
-            </option>
-          ))
-        }
-      </select>
-    </label>
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Acteur(s) :</span>
-      <select
-        name="acteur"
-        class="w-full border border-gray-300 rounded px-3 py-2"
-        multiple
-      >
-        <option>Choisir un acteur ou plusieurs acteurs</option>
-        {
-          personnesListe.map(({ nom, prenom, id }) => (
-            <option value={id} selected={film.acteur?.some(acteur => acteur === id)}>
-              {prenom} {nom}
-            </option>
-          ))
-        }
-      </select>
-    </label>
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Affiche :</span>
-      <input
-        type="file"
-        name="affiche"
-        id="affiche-input"
-        accept="image/*"
-        class="w-full border border-gray-300 rounded px-3 py-2"
-      />
-      {
-        afficheUrl && (
-          <div class="mt-2">
-            <span class="block text-gray-600 mb-1">Affiche actuelle :</span>
-            <img
-              src={afficheUrl}
-              alt="Affiche du film"
-              class="max-w-xs border"
+  <div class="max-w-2xl mx-auto mt-32">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h1 class="card-title text-3xl font-bold mb-6">
+          {id ? "Modifier un film" : "Ajouter un film"}
+        </h1>
+        {message && <div class="alert alert-error mb-4">{message}</div>}
+        <form method="post" enctype="multipart/form-data" class="space-y-6" id="film-form">
+          {id && <input type="hidden" name="id" value={id} />}
+          <input
+            type="hidden"
+            name="user"
+            value={Astro.locals.pb.authStore.record?.id}
+          />
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Titre :</span>
+            </label>
+            <input
+              type="text"
+              name="titre"
+              value={film.titre || ""}
+              class="input input-bordered w-full"
+              required
             />
           </div>
-        )
-      }
-      <div id="preview-container" class="mt-2 hidden">
-        <span class="block text-gray-600 mb-1">Nouvelle affiche :</span>
-        <img id="preview" alt="Prévisualisation" class="max-w-xs border" />
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Date de sortie :</span>
+            </label>
+            <input
+              type="date"
+              name="date_sortie"
+              value={film.date_sortie ? new Date(film.date_sortie).toISOString().split('T')[0] : ""}
+              class="input input-bordered w-full"
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Durée (en minutes) :</span>
+            </label>
+            <input
+              type="number"
+              name="duree_min"
+              value={film.duree_min || ""}
+              class="input input-bordered w-full"
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Synopsis :</span>
+            </label>
+            <textarea
+              name="synopsis"
+              rows="4"
+              class="textarea textarea-bordered w-full"
+            >{film.synopsis || ""}</textarea>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Réalisateur :</span>
+            </label>
+            <select name="realisateur" class="select select-bordered w-full">
+              <option value="">Choisir un réalisateur</option>
+              {personnesListe.map(({ nom, prenom, id: pid }) => (
+                <option value={pid} selected={film.realisateur === pid}>
+                  {prenom} {nom}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Producteur(s) :</span>
+            </label>
+            <select
+              name="producteur"
+              class="select select-bordered w-full"
+              multiple
+            >
+              <option value="">Choisir un producteur ou plusieurs producteurs</option>
+              {personnesListe.map(({ nom, prenom, id: pid }) => (
+                <option value={pid} selected={film.producteur?.some(producteur => producteur === pid)}>
+                  {prenom} {nom}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Acteur(s) :</span>
+            </label>
+            <select
+              name="acteur"
+              class="select select-bordered w-full"
+              multiple
+            >
+              <option value="">Choisir un acteur ou plusieurs acteurs</option>
+              {personnesListe.map(({ nom, prenom, id: pid }) => (
+                <option value={pid} selected={film.acteur?.some(acteur => acteur === pid)}>
+                  {prenom} {nom}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <label class="block mb-4">
+            <span class="block text-gray-700 mb-2">Affiche :</span>
+            <input
+              type="file"
+              name="affiche"
+              id="affiche-input"
+              accept="image/*"
+              class="file-input file-input-bordered w-full mb-4"
+            />
+            <div class="flex h-fit items-center justify-between gap-8">
+              {
+                afficheUrl && (
+                  <div class="h-120 w-1/2 ">
+                    <span class="block text-gray-600 mb-1">
+                      Affiche actuelle :
+                    </span>
+                    <img
+                      src={afficheUrl}
+                      alt="Affiche actuelle du film"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                )
+              }
+              <div id="preview-container" class="h-120 w-1/2 hidden">
+                <span class="block text-gray-600 mb-1">Nouvelle affiche :</span>
+                <img
+                  id="preview"
+                  alt="Prévisualisation"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </label>
+
+          <div class="form-control mt-8">
+            <GenresSelect selectedGenres={film.genres} />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Pays :</span>
+            </label>
+            <select name="pays" class="select select-bordered w-full">
+              <option value="">-- Sélectionnez un pays --</option>
+              {Object.entries(FilmsPaysOptions).map(([key, value]) => (
+                <option value={value} selected={film.pays === value}>
+                  {key}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div class="form-control mt-8">
+            <button type="submit" class="btn btn-primary w-full">
+              {id ? "Mettre à jour" : "Ajouter"}
+            </button>
+          </div>
+        </form>
       </div>
-    </label>
-    <div class="block mb-4">
-      <GenresSelect selectedGenres={film.genres} />
     </div>
-    <label class="block mb-4">
-      <span class="block text-gray-700 mb-2">Pays :</span>
-      <select name="pays" id="pays-input" value={film.pays || ""}>
-        {
-          Object.entries(FilmsPaysOptions).map(([key, value]) => (
-            <option value={value} selected={film.pays === value}>
-              {key}
-            </option>
-          ))
-        }
-      </select>
-    </label>
-    <button
-      type="submit"
-      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-    >
-      {id ? "Mettre à jour" : "Ajouter"}
-    </button>
-  </form>
+  </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
