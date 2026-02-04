@@ -216,7 +216,6 @@ const personnesListe = await Astro.locals.pb
         }
       });
 
-      // Handle form submission to exclude empty file inputs
       form.addEventListener("submit", (e) => {
         if (input.files?.length === 0) {
           input.removeAttribute("name");
