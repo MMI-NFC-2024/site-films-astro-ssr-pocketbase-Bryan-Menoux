@@ -4,24 +4,64 @@ import Linkpersonne from "../../components/Linkpersonne.astro";
 
 let personnes = await Astro.locals.pb.collection("personnes").getFullList();
 
-// personnes.map((personne) => {
-//     // Récupère l'url de l'image
-//     const imageUrl = Astro.locals.pb.files.getURL(personne, personne.photo);
-//     console.log(imageUrl);
-// });
+personnes.map((personne) => {
+  // Récupère l'url de l'image
+  const imageUrl = Astro.locals.pb.files.getURL(personne, personne.photo);
+});
 ---
 
 <Layout>
-  <h1>Personnes</h1>
-  <ul>
-    {
+  <a
+    href="/"
+    class="inline-block mb-4 text-primary hover:text-primary-focus ml-32 mt-32 sticky top-24"
+    >← Retourner à l'accueil</a
+  >
+  <h1 class="text-4xl uppercase font-bold mb-6 mx-auto max-w-7xl text-center">
+    Liste des Personnes
+  </h1>
+  <div
+    class="flex flex-col items-start mb-32 max-w-7xl mx-auto px-4"
+  >
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {
       personnes.map((personne) => (
-        <li>
-          <Linkpersonne personne={personne} />
-        </li>
+        <div
+          id="affiche-personne"
+          class="card bg-base-100 p-4 rounded-lg shadow-xl hover:shadow-2xl transition-shadow"
+        >
+          <img
+            src={Astro.locals.pb.files.getURL(personne, personne.photo)}
+            alt={personne.nom}
+            class="w-full h-120 object-cover mb-2 rounded"
+          />
+          <h2 class="text-xl font-semibold mb-1">
+            <Linkpersonne personne={personne} />
+          </h2>
+        </div>
       ))
     }
-  </ul>
-
-  {Astro.locals.pb.authStore.isValid && <a href="/personnes/edit/">Ajouter une nouvelle personne</a> }
+    </div>
+    {
+      Astro.locals.pb.authStore.isValid && (
+        <a href="/personnes/edit/" class="btn btn-primary mt-32">
+          Ajouter une nouvelle personne
+        </a>
+      )
+    }
+  </div>
 </Layout>
+
+<script>
+  // Petit script qui récupère chaque div des affiches pour mettre un lien directement sur l'image
+  const articles = document.querySelectorAll("#affiche-personne");
+  articles.forEach((article) => {
+    const link = article.querySelector("a");
+    const image = article.querySelector("img");
+    if (link && image) {
+      image.style.cursor = "pointer";
+      image.addEventListener("click", () => {
+        window.location.href = link.href;
+      });
+    }
+  });
+</script>
