@@ -1,61 +1,28 @@
-﻿---
+---
 import slug from "slug";
 import Layout from "../../../layouts/Layout.astro";
+import type { FilmsResponse, PersonnesResponse } from "../../../pocketbase-types";
 
-const { id: idFilm } = Astro.params;
+const { id } = Astro.params;
 let message = null;
 
-const film = await Astro.locals.pb.collection("films").getOne(idFilm!);
-const authUserId = Astro.locals.pb.authStore.record?.id;
-const peutModifierFilm = Boolean(authUserId && film.user === authUserId);
-const personnes = await Astro.locals.pb.collection("personnes").getFullList({
-  fields: "id,nom,prenom",
-});
+const film = await Astro.locals.pb.collection("films").getOne<FilmsResponse>(id!);
+const personnes = await Astro.locals.pb
+  .collection("personnes")
+  .getFullList<PersonnesResponse>({ sort: "nom,prenom" });
 
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
-  const personneId = String(data.get("personne") || "").trim();
+  data.set("film", id!);
+  data.set("user", Astro.locals.pb.authStore.record?.id || "");
 
-  if (!personneId) {
-    message = "Veuillez sélectionner une personne.";
-  }
-
-  if (!peutModifierFilm) {
-    message = "Vous n'avez pas les droits pour modifier ce film.";
-  }
-
-  data.set("film", idFilm!);
-  data.set("user", authUserId || "");
-
-  const roleCree =
-    !message &&
-    (await Astro.locals.pb.collection("roles").create(data).catch((err) => {
-      console.error("Erreur lors de la création du rôle :", err);
-      message = err.message;
-    }));
+  const roleCree = await Astro.locals.pb.collection("roles").create(data).catch((err) => {
+    console.error("Erreur lors de la création du rôle :", err);
+    message = err.message;
+  });
 
   if (roleCree) {
-    const acteursActuels = Array.isArray(film.acteur) ? film.acteur : [];
-    const acteursMaj = Array.from(new Set([...acteursActuels, personneId]));
-
-    const filmMaj = await Astro.locals.pb
-      .collection("films")
-      .update(film.id, {
-        acteur: acteursMaj,
-        user: film.user,
-      })
-      .catch((err) => {
-        console.error("Erreur lors de la mise à jour des acteurs du film :", err);
-        if (err?.status === 404) {
-          message = "Film introuvable ou non autorisé pour mise à jour.";
-        } else {
-          message = err.message;
-        }
-      });
-
-    if (filmMaj) {
-      return Astro.redirect(`/films/${film.id}-${slug(film.titre)}`);
-    }
+    return Astro.redirect(`/films/${film.id}-${slug(film.titre)}`);
   }
 }
 ---
@@ -64,10 +31,7 @@ if (Astro.request.method === "POST") {
   <div class="max-w-2xl mx-auto mt-32">
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
-        <a
-          href={`/films/${film.id}-${slug(film.titre)}`}
-          class="text-primary hover:text-primary-focus"
-        >
+        <a href={`/films/${film.id}-${slug(film.titre)}`} class="text-primary hover:text-primary-focus">
           ← Retour au film
         </a>
         <h1 class="card-title text-3xl font-bold mt-2">Ajouter un rôle</h1>
