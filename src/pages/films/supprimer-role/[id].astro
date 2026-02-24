@@ -1,0 +1,147 @@
+﻿---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { FilmsResponse, PersonnesResponse, RolesResponse } from "../../../pocketbase-types";
+
+const { id } = Astro.params;
+let message = null;
+
+const film = await Astro.locals.pb.collection("films").getOne<FilmsResponse>(id!);
+const authUserId = Astro.locals.pb.authStore.record?.id;
+const peutModifierFilm = Boolean(authUserId && film.user === authUserId);
+
+const roles = await Astro.locals.pb.collection("roles").getFullList<
+  RolesResponse<{ personne: PersonnesResponse }>
+>({
+  filter: `film = "${id}"`,
+  expand: "personne",
+  sort: "-created",
+});
+
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const roleId = String(data.get("role_id") || "").trim();
+  const personneId = String(data.get("personne_id") || "").trim();
+
+  if (!roleId) {
+    message = "Veuillez sélectionner un rôle à supprimer.";
+  }
+
+  if (!peutModifierFilm) {
+    message = "Vous n'avez pas les droits pour modifier ce film.";
+  }
+
+  const roleSupprime =
+    !message &&
+    (await Astro.locals.pb.collection("roles").delete(roleId).catch((err) => {
+      console.error("Erreur lors de la suppression du rôle :", err);
+      message = err.message;
+    }));
+
+  if (roleSupprime) {
+    const resteRolesPersonne = await Astro.locals.pb
+      .collection("roles")
+      .getList(1, 1, {
+        filter: `film = "${film.id}" && personne = "${personneId}"`,
+      })
+      .catch((err) => {
+        console.error("Erreur lors de la vérification des rôles restants :", err);
+        message = err.message;
+      });
+
+    if (!message && resteRolesPersonne && resteRolesPersonne.totalItems === 0) {
+      const acteursActuels = Array.isArray(film.acteur) ? film.acteur : [];
+      const acteursMaj = acteursActuels.filter((acteurId) => acteurId !== personneId);
+
+      await Astro.locals.pb
+        .collection("films")
+        .update(film.id, {
+          acteur: acteursMaj,
+          user: film.user,
+        })
+        .catch((err) => {
+          console.error("Erreur lors de la mise à jour des acteurs du film :", err);
+          message = err.message;
+        });
+    }
+
+    if (!message) {
+      return Astro.redirect(`/films/${film.id}-${slug(film.titre)}`);
+    }
+  }
+}
+---
+
+<Layout>
+  <div class="max-w-2xl mx-auto mt-32">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <a
+          href={`/films/${film.id}-${slug(film.titre)}`}
+          class="text-primary hover:text-primary-focus"
+        >
+          ← Retour au film
+        </a>
+        <h1 class="card-title text-3xl font-bold mt-2">Supprimer un rôle</h1>
+        <p class="text-base-content/70">Film : {film.titre}</p>
+
+        {message && <div class="alert alert-error mt-4">{message}</div>}
+
+        {
+          roles.length === 0 ? (
+            <div class="alert mt-4">Aucun rôle enregistré pour ce film.</div>
+          ) : (
+            <form method="post" class="space-y-4 mt-4">
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text font-semibold">Rôle à supprimer</span>
+                </label>
+                <select name="role_selection" id="role-selection" class="select select-bordered w-full" required>
+                  <option value="">Choisir un rôle</option>
+                  {roles.map((role) => {
+                    const personne = role.expand?.personne;
+                    const labelPersonne = personne
+                      ? `${personne.prenom} ${personne.nom}`
+                      : role.personne;
+
+                    return (
+                      <option value={`${role.id}|${role.personne}`}>
+                        {labelPersonne} - {role.nom_role || "Rôle non spécifié"}
+                      </option>
+                    );
+                  })}
+                </select>
+                <input type="hidden" name="role_id" id="role-id" />
+                <input type="hidden" name="personne_id" id="personne-id" />
+              </div>
+
+              <button type="submit" class="btn btn-error w-full">Supprimer le rôle</button>
+            </form>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script type="module">
+  document.addEventListener("DOMContentLoaded", () => {
+    const select = document.getElementById("role-selection");
+    const roleIdInput = document.getElementById("role-id");
+    const personneIdInput = document.getElementById("personne-id");
+
+    const syncHiddenInputs = () => {
+      if (!select || !roleIdInput || !personneIdInput) return;
+
+      const value = select.value || "";
+      const [roleId, personneId] = value.split("|");
+      roleIdInput.value = roleId || "";
+      personneIdInput.value = personneId || "";
+    };
+
+    if (select) {
+      select.addEventListener("change", syncHiddenInputs);
+      syncHiddenInputs();
+    }
+  });
+</script>
