@@ -1,0 +1,111 @@
+﻿---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+
+const { id: idFilm } = Astro.params;
+let message = null;
+
+const film = await Astro.locals.pb.collection("films").getOne(idFilm!);
+const authUserId = Astro.locals.pb.authStore.record?.id;
+const peutModifierFilm = Boolean(authUserId && film.user === authUserId);
+const personnes = await Astro.locals.pb.collection("personnes").getFullList({
+  fields: "id,nom,prenom",
+});
+
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const personneId = String(data.get("personne") || "").trim();
+
+  if (!personneId) {
+    message = "Veuillez sélectionner une personne.";
+  }
+
+  if (!peutModifierFilm) {
+    message = "Vous n'avez pas les droits pour modifier ce film.";
+  }
+
+  data.set("film", idFilm!);
+  data.set("user", authUserId || "");
+
+  const roleCree =
+    !message &&
+    (await Astro.locals.pb.collection("roles").create(data).catch((err) => {
+      console.error("Erreur lors de la création du rôle :", err);
+      message = err.message;
+    }));
+
+  if (roleCree) {
+    const acteursActuels = Array.isArray(film.acteur) ? film.acteur : [];
+    const acteursMaj = Array.from(new Set([...acteursActuels, personneId]));
+
+    const filmMaj = await Astro.locals.pb
+      .collection("films")
+      .update(film.id, {
+        acteur: acteursMaj,
+        user: film.user,
+      })
+      .catch((err) => {
+        console.error("Erreur lors de la mise à jour des acteurs du film :", err);
+        if (err?.status === 404) {
+          message = "Film introuvable ou non autorisé pour mise à jour.";
+        } else {
+          message = err.message;
+        }
+      });
+
+    if (filmMaj) {
+      return Astro.redirect(`/films/${film.id}-${slug(film.titre)}`);
+    }
+  }
+}
+---
+
+<Layout>
+  <div class="max-w-2xl mx-auto mt-32">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <a
+          href={`/films/${film.id}-${slug(film.titre)}`}
+          class="text-primary hover:text-primary-focus"
+        >
+          ← Retour au film
+        </a>
+        <h1 class="card-title text-3xl font-bold mt-2">Ajouter un rôle</h1>
+        <p class="text-base-content/70">Film : {film.titre}</p>
+
+        {message && <div class="alert alert-error mt-4">{message}</div>}
+
+        <form method="post" class="space-y-4 mt-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Personne</span>
+            </label>
+            <select name="personne" class="select select-bordered w-full" required>
+              <option value="">Choisir une personne</option>
+              {personnes.map((personne) => (
+                <option value={personne.id}>
+                  {personne.prenom} {personne.nom}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Nom du rôle</span>
+            </label>
+            <input
+              type="text"
+              name="nom_role"
+              class="input input-bordered w-full"
+              placeholder="Ex: Acteur, Producteur, Scénariste..."
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full">Ajouter le rôle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</Layout>

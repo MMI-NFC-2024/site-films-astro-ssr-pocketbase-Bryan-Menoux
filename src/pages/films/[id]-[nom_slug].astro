@@ -40,6 +40,9 @@ const film = await Astro.locals.pb.collection("films").getOne<
               <a href={`/films/edit/${film.id}`} class="btn btn-primary btn-sm w-full">
                 Modifier ce film
               </a>
+              <a href={`/films/ajout-role/${film.id}`} class="btn btn-primary btn-sm w-full mt-4">
+                Ajouter un rôle
+              </a>
             </div>
           )
         }

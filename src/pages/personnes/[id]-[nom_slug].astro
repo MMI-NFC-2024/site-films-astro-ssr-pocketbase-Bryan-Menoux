@@ -123,14 +123,14 @@ const roles = (await Astro.locals.pb.collection("roles").getFullList({
     {
       roles.some(
         (role) =>
-          role.expand?.film && role.expand.film.acteur?.includes(personne.id),
+          role.expand?.film && role.expand.personne?.id,
       ) && (
         <div class="flex min-w-full h-fit mt-8 gap-16 overflow-x-scroll py-16">
           {roles
             .filter(
               (role) =>
                 role.expand?.film &&
-                role.expand.film.acteur?.includes(personne.id),
+                role.expand.personne?.id == personne.id,
             )
             .map((role) => {
               const film = role.expand!.film!;
