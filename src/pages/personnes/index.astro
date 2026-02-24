@@ -55,15 +55,15 @@ personnes.map((personne) => {
     <div class="flex w-full h-fit gap-16">
       {
         Astro.locals.pb.authStore.isValid && (
-          <a href="/personnes/edit/" class="btn btn-primary mt-8  w-full flex-1">
-            Ajouter une nouvelle personne
+          <a href="/personnes/delete/" class="btn btn-error mt-8  w-full flex-1">
+            Supprimer une personne
           </a>
         )
       }
       {
         Astro.locals.pb.authStore.isValid && (
-          <a href="/personnes/delete/" class="btn btn-error mt-8  w-full flex-1">
-            Supprimer une personne
+          <a href="/personnes/edit/" class="btn btn-primary mt-8  w-full flex-1">
+            Ajouter une nouvelle personne
           </a>
         )
       }

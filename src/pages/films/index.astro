@@ -63,15 +63,15 @@ let films = await Astro.locals.pb.collection("films").getFullList();
     <div class="flex w-full h-fit gap-16">
       {
         Astro.locals.pb.authStore.isValid && (
-          <a href="/films/edit/" class="btn btn-primary mt-8 w-full flex-1">
-            Ajouter un nouveau film
+          <a href="/films/delete/" class="btn btn-error mt-8 w-full flex-1">
+            Supprimer un film
           </a>
         )
       }
       {
         Astro.locals.pb.authStore.isValid && (
-          <a href="/films/delete/" class="btn btn-error mt-8 w-full flex-1">
-            Supprimer un film
+          <a href="/films/edit/" class="btn btn-primary mt-8 w-full flex-1">
+            Ajouter un nouveau film
           </a>
         )
       }
