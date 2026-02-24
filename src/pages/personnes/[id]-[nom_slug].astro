@@ -121,23 +121,17 @@ const roles = (await Astro.locals.pb.collection("roles").getFullList({
       </div>
     </div>
     {
-      roles.some(
-        (role) =>
-          role.expand?.film && role.expand.personne?.id,
-      ) && (
+      roles.some((role) => role.expand?.film && role.expand.personne?.id) && (
         <div class="flex min-w-full h-fit mt-8 gap-16 overflow-x-scroll py-16">
           {roles
             .filter(
               (role) =>
-                role.expand?.film &&
-                role.expand.personne?.id == personne.id,
+                role.expand?.film && role.expand.personne?.id == personne.id,
             )
             .map((role) => {
               const film = role.expand!.film!;
               return (
-                <div
-                  class="flex flex-col items-center min-w-fit h-fit shadow-2xl p-4 rounded-lg affiche-film"
-                >
+                <div class="flex flex-col items-center min-w-fit h-fit shadow-2xl p-4 rounded-lg affiche-film">
                   {film.affiche && (
                     <img
                       src={Astro.locals.pb.files.getURL(film, film.affiche)}
@@ -147,6 +141,9 @@ const roles = (await Astro.locals.pb.collection("roles").getFullList({
                   )}
                   <Linkfilm film={film}>
                     <h3 class="text-lg font-semibold">{film.titre}</h3>
+                    {role.nom_role && (
+                      <p class="text-lg">Dans le rôle de : {role.nom_role}</p>
+                    )}
                   </Linkfilm>
                 </div>
               );

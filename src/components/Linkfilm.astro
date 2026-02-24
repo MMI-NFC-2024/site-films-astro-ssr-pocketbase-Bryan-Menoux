@@ -9,4 +9,6 @@ interface Props {
 const film = Astro.props.film;
 
 ---
-<a href={`/films/${film.id}-${slug(film.titre??"Inconnu")}`}>{film.titre}</a>
+<a href={`/films/${film.id}-${slug(film.titre ?? "Inconnu")}`}>
+    {Astro.slots.default ? <slot /> : film.titre}
+</a>
