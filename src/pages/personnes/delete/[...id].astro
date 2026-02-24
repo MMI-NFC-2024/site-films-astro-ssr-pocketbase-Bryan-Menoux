@@ -1,0 +1,54 @@
+---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { PersonnesResponse } from "../../../pocketbase-types";
+
+let id = Astro.params.id;
+
+const personne = await Astro.locals.pb.collection("personnes").getOne<PersonnesResponse>(id!);
+const authUserId = Astro.locals.pb.authStore.record?.id;
+const canDelete = Boolean(authUserId && personne.user === authUserId);
+let message: string | null = null;
+
+if (Astro.request.method === "POST") {
+	if (!canDelete) {
+		message = "Vous n'avez pas les droits pour supprimer cette personne.";
+	} else {
+		await Astro.locals.pb.collection("personnes").delete(personne.id).catch((err) => {
+			console.error("Erreur lors de la suppression de la personne :", err);
+			message = err.message;
+		});
+
+		if (!message) {
+			return Astro.redirect("/personnes");
+		}
+	}
+}
+---
+
+<Layout>
+	<div class="max-w-2xl mx-auto mt-32">
+		<div class="card bg-base-100 shadow-xl">
+			<div class="card-body">
+				<a href={`/personnes/${personne.id}-${slug(personne.nom)}`} class="text-primary hover:text-primary-focus">← Retour à la personne</a>
+				<h1 class="card-title text-3xl font-bold mt-2">Supprimer la personne</h1>
+				<p class="text-base-content/70 capitalize">Personne : {personne.nom} {personne.prenom}</p>
+
+				{message && <div class="alert alert-error mt-4">{message}</div>}
+
+				<div class="mt-4">
+					<p class="mb-4">Cette action est irréversible. Voulez-vous vraiment supprimer cette personne ?</p>
+
+					<form method="post" class="space-y-4">
+						<input type="hidden" name="confirm" value="yes" />
+						<div class="flex gap-2">
+							<button type="submit" class="btn btn-error">Supprimer la personne</button>
+							<a class="btn" href={`/personnes/${personne.id}-${slug(personne.nom)}`}>Annuler</a>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</Layout>
+

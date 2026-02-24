@@ -43,20 +43,31 @@ personnes.map((personne) => {
             </h2>
             {personne.profession && (
               <div class="text-base-content/70">
-                {personne.profession.map(prof => PersonnesProfessionOptions[prof]).join(', ')}
+                {personne.profession
+                  .map((prof) => PersonnesProfessionOptions[prof])
+                  .join(", ")}
               </div>
             )}
           </div>
         ))
       }
     </div>
-    {
-      Astro.locals.pb.authStore.isValid && (
-        <a href="/personnes/edit/" class="btn btn-primary mt-32">
-          Ajouter une nouvelle personne
-        </a>
-      )
-    }
+    <div class="flex w-full h-fit gap-16">
+      {
+        Astro.locals.pb.authStore.isValid && (
+          <a href="/personnes/edit/" class="btn btn-primary mt-8  w-full flex-1">
+            Ajouter une nouvelle personne
+          </a>
+        )
+      }
+      {
+        Astro.locals.pb.authStore.isValid && (
+          <a href="/personnes/delete/" class="btn btn-error mt-8  w-full flex-1">
+            Supprimer une personne
+          </a>
+        )
+      }
+    </div>
   </div>
 </Layout>
 

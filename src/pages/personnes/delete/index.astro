@@ -1,0 +1,66 @@
+---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { PersonnesResponse } from "../../../pocketbase-types";
+
+let message: string | null = null;
+
+const personnes = await Astro.locals.pb.collection("personnes").getFullList<PersonnesResponse>({ sort: "nom" }).catch((err) => {
+	console.error("Erreur lors de la récupération des personnes :", err);
+	message = err.message;
+});
+
+---
+
+<Layout>
+	<div class="flex max-w-2xl mx-auto mt-32">
+		<div class="card shadow-xl w-full">
+			<div class="card-body">
+				<h1 class="card-title text-3xl font-bold">Supprimer une personne</h1>
+
+				{message && <div class="alert alert-error mt-4">{message}</div>}
+
+				{(!personnes || personnes.length === 0) ? (
+					<div class="alert mt-4">Aucune personne trouvée.</div>
+				) : (
+					<form id="select-delete-form" method="get" action="/personnes/delete/" class="space-y-4 mt-4">
+						<div class="form-control">
+							<label class="label">
+								<span class="label-text font-semibold mb-2">Choisir une personne à supprimer</span>
+							</label>
+							<select id="personne-select" name="id" class="select select-bordered w-full" required>
+								<option value="">Choisir une personne</option>
+								{personnes.map((personne) => (
+									<option value={`${personne.id}`}>
+                                        {personne.prenom} {personne.nom}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div class="flex gap-2">
+							<button type="submit" class="btn btn-error">Continuer</button>
+							<a class="btn" href="/">Annuler</a>
+						</div>
+					</form>
+				)}
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<script type="module">
+	document.addEventListener('DOMContentLoaded', () => {
+		const form = document.getElementById('select-delete-form');
+		const select = document.getElementById('personne-select');
+		if (!form || !select) return;
+
+		form.addEventListener('submit', (e) => {
+			e.preventDefault();
+			const val = select.value || '';
+			if (!val) return;
+			window.location.href = `/personnes/delete/${val}`;
+		});
+	});
+</script>
+
