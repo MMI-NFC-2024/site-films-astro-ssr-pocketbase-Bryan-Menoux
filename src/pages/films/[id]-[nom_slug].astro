@@ -92,7 +92,7 @@ const film = await Astro.locals.pb.collection("films").getOne<
 
           {
             film.expand?.realisateur && (
-              <div>
+              <div class="flex flex-col">
                 <span class="font-semibold text-base-content/70">
                   Réalisateur :
                 </span>
@@ -108,7 +108,7 @@ const film = await Astro.locals.pb.collection("films").getOne<
 
           {
             film.expand?.acteur && film.expand.acteur.length > 0 && (
-              <div>
+              <div class="flex flex-col">
                 <span class="font-semibold text-base-content/70">
                   Acteurs :
                 </span>
@@ -128,7 +128,7 @@ const film = await Astro.locals.pb.collection("films").getOne<
 
           {
             film.expand?.producteur && film.expand.producteur.length > 0 && (
-              <div>
+              <div class="flex flex-col">
                 <span class="font-semibold text-base-content/70">
                   Producteurs :
                 </span>

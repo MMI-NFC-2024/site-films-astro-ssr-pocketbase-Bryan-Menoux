@@ -7,7 +7,6 @@ import type {
   RolesRecord,
 } from "../../pocketbase-types";
 import Linkfilm from "../../components/Linkfilm.astro";
-
 const { id } = Astro.params;
 
 const personne = await Astro.locals.pb.collection("personnes").getOne(id!);
@@ -61,7 +60,7 @@ const roles = (await Astro.locals.pb.collection("roles").getFullList({
 
         <div class="space-y-4">
           {
-            roles.map((role) => role.personne).includes(personne.id) && (
+            roles.length > 0 && (
               <div>
                 <span class="font-semibold text-base-content/70">Rôles :</span>
                 <span class="ml-2">
@@ -69,14 +68,16 @@ const roles = (await Astro.locals.pb.collection("roles").getFullList({
                     const personRoles = roles.filter(
                       (role) => role.personne === personne.id,
                     );
+
                     const roleMap = new Map();
                     personRoles.forEach((role) => {
                       const roleName = role.nom_role || "Non spécifié";
                       if (!roleMap.has(roleName)) {
                         roleMap.set(roleName, new Set());
                       }
-                      if (role.film) {
-                        roleMap.get(roleName).add(role.film);
+                      const filmId = role.expand?.film?.id || role.film;
+                      if (filmId) {
+                        roleMap.get(roleName)!.add(String(filmId));
                       }
                     });
                     return Array.from(roleMap.entries())
@@ -119,34 +120,45 @@ const roles = (await Astro.locals.pb.collection("roles").getFullList({
         </div>
       </div>
     </div>
-    <div class="flex min-w-full h-fit mt-8 gap-16 overflow-x-scroll py-16">
-      {
-        roles.map((role) => {
-          if (role.personne === personne.id && role.film && role.expand?.film) {
-            const film = role.expand!.film!;
-            return (
-              <div class=" flex flex-col items-center min-w-fit h-fit shadow-2xl p-4 rounded-lg" id="affiche-film">
-                {film.affiche && (
-                  <img
-                    src={Astro.locals.pb.files.getURL(film, film.affiche)}
-                    alt={`Affiche du film ${film.titre}`}
-                    class="w-64 min-h-96 object-cover rounded-sm"
-                  />
-                )}
-                <Linkfilm film={film}>
-                  <h3 class="text-lg font-semibold">{film.titre}</h3>
-                </Linkfilm>
-              </div>
-            );
-          }
-        })
-      }
-    </div>
+    {
+      roles.some(
+        (role) =>
+          role.expand?.film && role.expand.film.acteur?.includes(personne.id),
+      ) && (
+        <div class="flex min-w-full h-fit mt-8 gap-16 overflow-x-scroll py-16">
+          {roles
+            .filter(
+              (role) =>
+                role.expand?.film &&
+                role.expand.film.acteur?.includes(personne.id),
+            )
+            .map((role) => {
+              const film = role.expand!.film!;
+              return (
+                <div
+                  class="flex flex-col items-center min-w-fit h-fit shadow-2xl p-4 rounded-lg affiche-film"
+                >
+                  {film.affiche && (
+                    <img
+                      src={Astro.locals.pb.files.getURL(film, film.affiche)}
+                      alt={`Affiche du film ${film.titre}`}
+                      class="w-64 min-h-96 object-cover rounded-sm"
+                    />
+                  )}
+                  <Linkfilm film={film}>
+                    <h3 class="text-lg font-semibold">{film.titre}</h3>
+                  </Linkfilm>
+                </div>
+              );
+            })}
+        </div>
+      )
+    }
   </div>
 </Layout>
 
 <script>
-  const articles = document.querySelectorAll("#affiche-film");
+  const articles = document.querySelectorAll(".affiche-film");
   articles.forEach((article) => {
     const link = article.querySelector("a");
     const image = article.querySelector("img");
