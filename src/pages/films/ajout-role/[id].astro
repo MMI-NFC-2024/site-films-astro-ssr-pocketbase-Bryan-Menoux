@@ -16,12 +16,48 @@ if (Astro.request.method === "POST") {
   data.set("film", id!);
   data.set("user", Astro.locals.pb.authStore.record?.id || "");
 
-  const roleCree = await Astro.locals.pb.collection("roles").create(data).catch((err) => {
-    console.error("Erreur lors de la création du rôle :", err);
-    message = err.message;
-  });
+  const personneId = String(data.get("personne") || "").trim();
+  const nomRole = String(data.get("nom_role") || "").trim();
+
+  let roleCree = null;
+  if (personneId && nomRole) {
+    const existingRoles = await Astro.locals.pb
+      .collection("roles")
+      .getFullList({ filter: `film = "${id}" && personne = "${personneId}"` })
+      .catch((err) => {
+        console.error("Erreur lors de la récupération des rôles existants :", err);
+        message = err.message;
+      });
+
+    if (!message && existingRoles && existingRoles.some((r) => String(r.nom_role || "").trim().toLowerCase() === nomRole.toLowerCase())) {
+      message = "Ce rôle existe déjà pour cette personne.";
+    }
+  }
+
+  if (!message) {
+    roleCree = await Astro.locals.pb
+      .collection("roles")
+      .create(data)
+      .catch((err) => {
+        console.error("Erreur lors de la création du rôle :", err);
+        message = err.message;
+      });
+  }
 
   if (roleCree) {
+    try {
+      const acteursActuels = Array.isArray(film.acteur) ? film.acteur : [];
+      if (personneId && !acteursActuels.includes(personneId)) {
+        const acteursMaj = [...acteursActuels, personneId];
+        await Astro.locals.pb.collection("films").update(film.id, {
+          acteur: acteursMaj,
+          user: film.user,
+        });
+      }
+    } catch (err) {
+      console.error("Erreur lors de la mise à jour des acteurs du film :", err);
+    }
+
     return Astro.redirect(`/films/${film.id}-${slug(film.titre)}`);
   }
 }
