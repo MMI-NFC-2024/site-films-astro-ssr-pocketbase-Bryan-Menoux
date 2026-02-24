@@ -121,7 +121,7 @@ const roles = (await Astro.locals.pb.collection("roles").getFullList({
       </div>
     </div>
     {
-      roles.some((role) => role.expand?.film && role.expand.personne?.id) && (
+      roles.some((role) => role.expand?.film && role.expand.personne?.id == personne.id) && (
         <div class="flex min-w-full h-fit mt-8 gap-16 overflow-x-scroll py-16">
           {roles
             .filter(
