@@ -12,40 +12,84 @@ let films = await Astro.locals.pb.collection("films").getFullList();
 ---
 
 <Layout>
-    <a href="/" class="inline-block mb-4 text-primary hover:text-primary-focus ml-32 mt-32 sticky top-24">← Retourner à l'accueil</a>
-    <h1 class="text-4xl uppercase font-bold mb-6 mx-auto max-w-7xl text-center">Liste des Films</h1>
-    <div class="flex flex-col mx-auto max-w-7xl">
+  <a
+    href="/"
+    class="inline-block mb-4 text-primary hover:text-primary-focus ml-32 mt-32 sticky top-24"
+    >← Retourner à l'accueil</a
+  >
+  <h1 class="text-4xl uppercase font-bold mb-6 mx-auto max-w-7xl text-center">
+    Liste des Films
+  </h1>
+  <div class="flex flex-col mx-auto max-w-7xl">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {
-      films.map((film) => (
-        <div id="affiche-film" class="card bg-base-100 border border-base-300 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-          {film.affiche && <img src={Astro.locals.pb.files.getURL(film, film.affiche)} alt={film.titre} class="w-full h-120 object-cover mb-2 rounded" />}
-          <h2 class="text-xl font-semibold mb-1"><a href={`/films/${film.id}-${slug(film.titre??"Inconnu")}`} class="text-primary hover:text-primary-focus">{film.titre}</a></h2>
-          {film.date_sortie && <p class="text-base-content/70 mb-1">{new Date(film.date_sortie).getFullYear()}</p>}
-          {film.genres && <p class="text-base-content/50">{film.genres.join(", ")}</p>}
-          {film.synopsis && <p class="text-base-content/60 text-sm mt-2 line-clamp-2">{film.synopsis}</p>}
-        </div>
-      ))
-    }
+        films.map((film) => (
+          <div
+            id="affiche-film"
+            class="card bg-base-100 border border-base-300 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+          >
+            {film.affiche && (
+              <img
+                src={Astro.locals.pb.files.getURL(film, film.affiche)}
+                alt={film.titre}
+                class="w-full h-120 object-cover mb-2 rounded"
+              />
+            )}
+            <h2 class="text-xl font-semibold mb-1">
+              <a
+                href={`/films/${film.id}-${slug(film.titre ?? "Inconnu")}`}
+                class="text-primary hover:text-primary-focus"
+              >
+                {film.titre}
+              </a>
+            </h2>
+            {film.date_sortie && (
+              <p class="text-base-content/70 mb-1">
+                {new Date(film.date_sortie).getFullYear()}
+              </p>
+            )}
+            {film.genres && (
+              <p class="text-base-content/50">{film.genres.join(", ")}</p>
+            )}
+            {film.synopsis && (
+              <p class="text-base-content/60 text-sm mt-2 line-clamp-2">
+                {film.synopsis}
+              </p>
+            )}
+          </div>
+        ))
+      }
     </div>
-      {Astro.locals.pb.authStore.isValid && <a href="/films/edit/" class="btn btn-primary mt-8">Ajouter un nouveau film</a> }
+    <div class="flex w-full h-fit gap-16">
+      {
+        Astro.locals.pb.authStore.isValid && (
+          <a href="/films/edit/" class="btn btn-primary mt-8 w-full flex-1">
+            Ajouter un nouveau film
+          </a>
+        )
+      }
+      {
+        Astro.locals.pb.authStore.isValid && (
+          <a href="/films/delete/" class="btn btn-error mt-8 w-full flex-1">
+            Supprimer un film
+          </a>
+        )
+      }
+    </div>
   </div>
-
-
-
 </Layout>
 
 <script>
-    // Petit script qui récupère chaque div des affiches pour mettre un lien directement sur l'image
-    const articles = document.querySelectorAll('#affiche-film');
-    articles.forEach(article => {
-        const link = article.querySelector('a');
-        const image = article.querySelector('img');
-        if (link && image) {
-            image.style.cursor = 'pointer';
-            image.addEventListener('click', () => {
-                window.location.href = link.href;
-            });
-        }
-    });
+  // Petit script qui récupère chaque div des affiches pour mettre un lien directement sur l'image
+  const articles = document.querySelectorAll("#affiche-film");
+  articles.forEach((article) => {
+    const link = article.querySelector("a");
+    const image = article.querySelector("img");
+    if (link && image) {
+      image.style.cursor = "pointer";
+      image.addEventListener("click", () => {
+        window.location.href = link.href;
+      });
+    }
+  });
 </script>

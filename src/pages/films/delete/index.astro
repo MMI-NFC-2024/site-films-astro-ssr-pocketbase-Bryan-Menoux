@@ -1,0 +1,66 @@
+---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { FilmsResponse } from "../../../pocketbase-types";
+
+let message: string | null = null;
+
+const films = await Astro.locals.pb.collection("films").getFullList<FilmsResponse>({ sort: "titre" }).catch((err) => {
+	console.error("Erreur lors de la récupération des films :", err);
+	message = err.message;
+});
+
+---
+
+<Layout>
+	<div class="flex max-w-2xl mx-auto mt-32">
+		<div class="card shadow-xl w-full">
+			<div class="card-body">
+				<h1 class="card-title text-3xl font-bold">Supprimer un film</h1>
+
+				{message && <div class="alert alert-error mt-4">{message}</div>}
+
+				{(!films || films.length === 0) ? (
+					<div class="alert mt-4">Aucun film trouvé.</div>
+				) : (
+					<form id="select-delete-form" method="get" action="/films/delete/" class="space-y-4 mt-4">
+						<div class="form-control">
+							<label class="label">
+								<span class="label-text font-semibold mb-2">Choisir un film à supprimer</span>
+							</label>
+							<select id="film-select" name="id" class="select select-bordered w-full" required>
+								<option value="">Choisir un film</option>
+								{films.map((film) => (
+									<option value={`${film.id}`}>
+										{film.titre} {film.date_sortie ? `(${new Date(film.date_sortie).getFullYear()})` : ""}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div class="flex gap-2">
+							<button type="submit" class="btn btn-error">Continuer</button>
+							<a class="btn" href="/">Annuler</a>
+						</div>
+					</form>
+				)}
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<script type="module">
+	document.addEventListener('DOMContentLoaded', () => {
+		const form = document.getElementById('select-delete-form');
+		const select = document.getElementById('film-select');
+		if (!form || !select) return;
+
+		form.addEventListener('submit', (e) => {
+			e.preventDefault();
+			const val = select.value || '';
+			if (!val) return;
+			window.location.href = `/films/delete/${val}`;
+		});
+	});
+</script>
+

@@ -1,0 +1,54 @@
+---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { FilmsResponse } from "../../../pocketbase-types";
+
+let id = Astro.params.id;
+
+const film = await Astro.locals.pb.collection("films").getOne<FilmsResponse>(id!);
+const authUserId = Astro.locals.pb.authStore.record?.id;
+const canDelete = Boolean(authUserId && film.user === authUserId);
+let message: string | null = null;
+
+if (Astro.request.method === "POST") {
+	if (!canDelete) {
+		message = "Vous n'avez pas les droits pour supprimer ce film.";
+	} else {
+		await Astro.locals.pb.collection("films").delete(film.id).catch((err) => {
+			console.error("Erreur lors de la suppression du film :", err);
+			message = err.message;
+		});
+
+		if (!message) {
+			return Astro.redirect("/films");
+		}
+	}
+}
+---
+
+<Layout>
+	<div class="max-w-2xl mx-auto mt-32">
+		<div class="card bg-base-100 shadow-xl">
+			<div class="card-body">
+				<a href={`/films/${film.id}-${slug(film.titre)}`} class="text-primary hover:text-primary-focus">← Retour au film</a>
+				<h1 class="card-title text-3xl font-bold mt-2">Supprimer le film</h1>
+				<p class="text-base-content/70">Film : {film.titre}</p>
+
+				{message && <div class="alert alert-error mt-4">{message}</div>}
+
+				<div class="mt-4">
+					<p class="mb-4">Cette action est irréversible. Voulez-vous vraiment supprimer ce film ?</p>
+
+					<form method="post" class="space-y-4">
+						<input type="hidden" name="confirm" value="yes" />
+						<div class="flex gap-2">
+							<button type="submit" class="btn btn-error">Supprimer le film</button>
+							<a class="btn" href={`/films/${film.id}-${slug(film.titre)}`}>Annuler</a>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</Layout>
+
