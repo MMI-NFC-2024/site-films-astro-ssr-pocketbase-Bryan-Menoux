@@ -7,6 +7,8 @@ import {
 } from "../../../pocketbase-types";
 import { formatDate } from "../../../utils/utilitaires";
 import GenresSelect from "../../../components/GenresSelect.astro";
+import Multiselect from "@vueform/multiselect";
+import SelectPersonnes from "../../../components/SelectPersonnes.vue";
 
 const { id } = Astro.params;
 let message = null;
@@ -26,7 +28,6 @@ if (Astro.request.method === "POST") {
   ).catch((err) => {
     console.error("Erreur de sauvegarde du film : ", err);
     message = err.message;
-    console.log("Message d'erreur :", message);
   });
   if (filmCree) {
     return Astro.redirect(`/films/${filmCree.id}-${slug(filmCree.titre)}`);
@@ -50,7 +51,12 @@ const personnesListe = await Astro.locals.pb
           {id ? "Modifier un film" : "Ajouter un film"}
         </h1>
         {message && <div class="alert alert-error mb-4">{message}</div>}
-        <form method="post" enctype="multipart/form-data" class="space-y-6" id="film-form">
+        <form
+          method="post"
+          enctype="multipart/form-data"
+          class="space-y-6"
+          id="film-form"
+        >
           {id && <input type="hidden" name="id" value={id} />}
           <input
             type="hidden"
@@ -78,7 +84,9 @@ const personnesListe = await Astro.locals.pb
             <input
               type="date"
               name="date_sortie"
-              value={film.date_sortie ? new Date(film.date_sortie).toISOString().split('T')[0] : ""}
+              value={film.date_sortie
+                ? new Date(film.date_sortie).toISOString().split("T")[0]
+                : ""}
               class="input input-bordered w-full"
             />
           </div>
@@ -103,28 +111,33 @@ const personnesListe = await Astro.locals.pb
               name="synopsis"
               rows="4"
               class="textarea textarea-bordered w-full"
-            >{film.synopsis || ""}</textarea>
+              >{film.synopsis || ""}</textarea
+            >
           </div>
 
           <div class="form-control">
             <label class="label">
               <span class="label-text font-semibold">Réalisateur :</span>
             </label>
-            <select name="realisateur" class="select select-bordered w-full">
+            <SelectPersonnes personnesListe={personnesListe} name="realisateur" value={film.realisateur} client:load />
+
+            <!-- <select name="realisateur" class="select select-bordered w-full">
               <option value="">Choisir un réalisateur</option>
-              {personnesListe.map(({ nom, prenom, id: pid }) => (
-                <option value={pid} selected={film.realisateur === pid}>
-                  {prenom} {nom}
-                </option>
-              ))}
-            </select>
+              {
+                personnesListe.map(({ nom, prenom, id: pid }) => (
+                  <option value={pid} selected={film.realisateur === pid}>
+                    {prenom} {nom}
+                  </option>
+                ))
+              }
+            </select> -->
           </div>
 
           <div class="form-control">
             <label class="label">
               <span class="label-text font-semibold">Producteur(s) :</span>
             </label>
-            <select
+            <!-- <select
               name="producteur"
               class="select select-bordered w-full"
               multiple
@@ -135,24 +148,26 @@ const personnesListe = await Astro.locals.pb
                   {prenom} {nom}
                 </option>
               ))}
-            </select>
+            </select> -->
+            <SelectPersonnes personnesListe={personnesListe} name="producteur" value={film.producteur} multiple client:load />
           </div>
 
           <div class="form-control">
             <label class="label">
               <span class="label-text font-semibold">Acteur(s) :</span>
             </label>
-            <select
-              name="acteur"
-              class="select select-bordered w-full"
-              multiple
-            >
+            <!-- <SelectPersonnes personnesListe={personnesListe} name="acteur" value={film.acteur} multiple client:load /> -->
               <option value="">Choisir un acteur ou plusieurs acteurs</option>
-              {personnesListe.map(({ nom, prenom, id: pid }) => (
-                <option value={pid} selected={film.acteur?.some(acteur => acteur === pid)}>
-                  {prenom} {nom}
-                </option>
-              ))}
+              {
+                personnesListe.map(({ nom, prenom, id: pid }) => (
+                  <option
+                    value={pid}
+                    selected={film.acteur?.some((acteur) => acteur === pid)}
+                  >
+                    {prenom} {nom}
+                  </option>
+                ))
+              }
             </select>
           </div>
 
@@ -201,11 +216,13 @@ const personnesListe = await Astro.locals.pb
             </label>
             <select name="pays" class="select select-bordered w-full">
               <option value="">-- Sélectionnez un pays --</option>
-              {Object.entries(FilmsPaysOptions).map(([key, value]) => (
-                <option value={value} selected={film.pays === value}>
-                  {key}
-                </option>
-              ))}
+              {
+                Object.entries(FilmsPaysOptions).map(([key, value]) => (
+                  <option value={value} selected={film.pays === value}>
+                    {key}
+                  </option>
+                ))
+              }
             </select>
           </div>
 
@@ -260,4 +277,5 @@ const personnesListe = await Astro.locals.pb
       );
     });
   </script>
+
 </Layout>
