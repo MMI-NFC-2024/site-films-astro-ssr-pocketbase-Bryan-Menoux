@@ -16,4 +16,4 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash /var/www/tpvps/redeploy.sh
+            /var/www/tpvps/redeploy.sh
