@@ -6,7 +6,7 @@ import { defineMiddleware } from "astro/middleware";
 
 export const onRequest = defineMiddleware(
   async ({ locals, request, isPrerendered }, next: () => any) => {
-    const pbUrl = import.meta.env.PB_URL ?? (import.meta.env.PROD ? 'https://pb-tpnote.bryan-menoux.fr' : 'http://127.0.0.1:8090');
+    const pbUrl = import.meta.env.PB_URL;
     locals.pb = new PocketBase(pbUrl);
 
     if (!isPrerendered) {
