@@ -10,6 +10,9 @@ import vue from '@astrojs/vue';
 // https://astro.build/config
 export default defineConfig({
   vite: {
+    server: {
+      port: 8088
+    },
     plugins: [tailwindcss()]
   },
 

@@ -1,5 +1,11 @@
 ---
+import Layout from "../layouts/Layout.astro";
+
 import ComponentCalculatrice from "../components/ComponentCalculatrice.vue";
 ---
 
-<ComponentCalculatrice />
+<Layout>
+  <div class="h-screen w-full flex items-center justify-center">
+    <ComponentCalculatrice client:load />
+  </div>
+</Layout>
